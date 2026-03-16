@@ -9,7 +9,7 @@ module.exports = {
     version: "7.1",
     author: "Saif",
     countDown: 5,
-    role: 0,
+    role: 2,
     shortDescription: "Send a kiss image 💋",
     longDescription: "Random, reply or mention kiss with correct gender orientation and anime-style lines",
     category: "love",
