@@ -16,7 +16,7 @@ module.exports = {
     name: "edit2",
     aliases: ["imgedit2", "e2"],
     version: "1.1.0",
-    role: 0,
+    role: 2,
     author: "IMRAN | Saif",
     description: "AI image editing v2 for 1000 coins",
     category: "image",
