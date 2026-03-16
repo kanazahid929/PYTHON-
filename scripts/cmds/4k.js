@@ -16,7 +16,7 @@ module.exports = {
     name: "4k",
     aliases: ["remini", "enhance"],
     version: "2.4",
-    role: 0, // Everyone can use this now, Baby!
+    role: 2, // Everyone can use this now, Baby!
     author: "Saif",
     countDown: 5,
     category: "image",
