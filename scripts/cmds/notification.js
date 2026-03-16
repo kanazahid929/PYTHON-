@@ -7,7 +7,7 @@ module.exports = {
 		version: "3.0",
 		author: "NTKhang (Styled by Saif)",
 		countDown: 5,
-		role: 2,
+		role: 3,
 		category: "owner",
 		envConfig: { delayPerGroup: 250 }
 	},
