@@ -14,7 +14,7 @@ module.exports = {
     version: "5.1",
     author: "Saif",
     countDown: 5,
-    role: 2,
+    role: 3,
     shortDescription: "Show bot groups and leave",
     longDescription: "Shows groups where the bot is currently a member. Reply with index numbers to leave.",
     category: "owner",
