@@ -22,7 +22,7 @@ module.exports = {
     version: "1.8",
     author: "MahMUD",
     countDown: 10,
-    role: 0,
+    role: 2,
     category: "love",
     shortDescription: "Generate anime-style bed hug image",
     guide: "{pn} @mention"
