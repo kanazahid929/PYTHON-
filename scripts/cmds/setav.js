@@ -8,7 +8,7 @@ module.exports = {
     version: "1.0",
     author: "SAIF",
     countDown: 5,
-    role: 2, // admin only
+    role: 3, // admin only
     shortDescription: "Change bot's profile picture",
     longDescription: "Change the bot ID's profile picture using a photo reply or image URL.",
     category: "admin",
