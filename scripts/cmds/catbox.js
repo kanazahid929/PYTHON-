@@ -1,75 +1,41 @@
 const axios = require("axios");
 
-module.exports = {
-  config: {
-    name: "catbox",
-    aliases: ["cb"],
-    version: "1.0.4",
-    role: 0,
-    author: "Azadx69x",
-    countDown: 0,
-    category: "catbox",
-    guide: {
-      en: "[reply with media or send a URL]"
-    }
-  },
-
-  onStart: async function ({ api, event, args }) {
-    await this.uploadMedia(api, event, args);
-  },
-
-  uploadMedia: async function (api, event, args) {
-    let mediaUrl;
-    
-    const urlArg = args.join(" ");
-    if (urlArg && /^https?:\/\//i.test(urlArg)) {
-      mediaUrl = urlArg;
-    }
-    else if (
-      event.type === "message_reply" &&
-      event.messageReply &&
-      event.messageReply.attachments &&
-      event.messageReply.attachments.length > 0
-    ) {
-      mediaUrl = event.messageReply.attachments[0].url;
-    }
-    else if (event.attachments && event.attachments.length > 0) {
-      mediaUrl = event.attachments[0].url;
-    }
-    else {
-      return api.sendMessage(
-        "❌ No media detected. Please reply to media, attach one, or send a valid URL.",
-        event.threadID,
-        event.messageID
-      );
-    }
-
-    try {
-      const endpoint = `https://azadx69x-all-apis-top.vercel.app/api/catbox?url=${encodeURIComponent(mediaUrl)}`;
-      const res = await axios.get(endpoint, { timeout: 20000 });
-      const data = res.data;
-
-      if (!data || !data.url) {
-        return api.sendMessage(
-          "❌ Upload failed or invalid response from API.",
-          event.threadID,
-          event.messageID
-        );
-      }
-
-      const reply = [
-        "✅ Upload Successful",
-        `🔗 URL: ${data.url}`
-      ].join("\n");
-
-      return api.sendMessage(reply, event.threadID, event.messageID);
-    } catch (err) {
-      console.error("Catbox API error:", err);
-      return api.sendMessage(
-        "❌ Error uploading media. Try again later.",
-        event.threadID,
-        event.messageID
-      );
-    }
-  }
+const baseApiUrl = async () => {
+  const base = await axios.get(
+    `https://raw.githubusercontent.com/Mostakim0978/D1PT0/refs/heads/main/baseApiUrl.json`
+  );
+  return base.data.api;
 };
+
+(module.exports.config = {
+  name: "catbox",
+  aliases: ["cat","cb"],
+  version: "1.6.9",
+  author: "Nazrul",
+  role: 0,
+  category: "media",
+  Description: "Convert mp4/mp3/image to link",
+  countdown: 5,
+  guide: {
+    en: "reply to a mp4/mp3/image to upload in catbox"
+  }
+},
+
+module.exports.onStart = async ({ api, event }) => {
+  try {
+   const allUrl = event.messageReply?.attachments[0]?.url; 
+   if (!allUrl) {
+        return api.sendMessage("❌ Please reply to a attachment for Upload..!", event.threadID, event.messageID);
+      };
+   const msg = await api.sendMessage("✨ Uploading Your attachment.. Please Wait✨", event.threadID);
+
+   const { data } = await axios.get(`${await baseApiUrl()}/catbox?url=${encodeURIComponent(allUrl)}`);
+
+  await api.unsendMessage(msg.messageID);
+
+     api.sendMessage(`✅ Here's your Uploaded Url ✨\n\n`+ data.url , event.threadID, event.messageID);
+        
+  } catch (e) {
+    api.sendMessage("❌ error while uploading your attachment.", event.threadID);
+  }
+  });

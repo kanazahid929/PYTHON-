@@ -1,274 +1,165 @@
-const { getPrefix } = global.utils;
-const { commands, aliases } = global.GoatBot;
-
-function fancyText(text) {
+// Bold small caps font map
+const boldFont = (text) => {
   const map = {
-    'a': '𝖺', 'b': '𝖻', 'c': '𝖼', 'd': '𝖽', 'e': '𝖾', 'f': '𝖿', 'g': '𝗀', 'h': '𝗁', 'i': '𝗂',
-    'j': '𝗃', 'k': '𝗄', 'l': '𝗅', 'm': '𝗆', 'n': '𝗇', 'o': '𝗈', 'p': '𝗉', 'q': '𝗊', 'r': '𝗋',
-    's': '𝗌', 't': '𝗍', 'u': '𝗎', 'v': '𝗏', 'w': '𝗐', 'x': '𝗑', 'y': '𝗒', 'z': '𝗓',
-    'A': '𝖠', 'B': '𝖡', 'C': '𝖢', 'D': '𝖣', 'E': '𝖤', 'F': '𝖥', 'G': '𝖦', 'H': '𝖧', 'I': '𝖨',
-    'J': '𝖩', 'K': '𝖪', 'L': '𝖫', 'M': '𝖬', 'N': '𝖭', 'O': '𝖮', 'P': '𝖯', 'Q': '𝖰', 'R': '𝖱',
-    'S': '𝖲', 'T': '𝖳', 'U': '𝖴', 'V': '𝖵', 'W': '𝖶', 'X': '𝖷', 'Y': '𝖸', 'Z': '𝖹'
+    A:"𝐀",B:"𝐁",C:"𝐂",D:"𝐃",E:"𝐄",F:"𝐅",G:"𝐆",H:"𝐇",I:"𝐈",J:"𝐉",
+    K:"𝐊",L:"𝐋",M:"𝐌",N:"𝐍",O:"𝐎",P:"𝐏",Q:"𝐐",R:"𝐑",S:"𝐒",T:"𝐓",
+    U:"𝐔",V:"𝐕",W:"𝐖",X:"𝐗",Y:"𝐘",Z:"𝐙",
+    a:"𝐚",b:"𝐛",c:"𝐜",d:"𝐝",e:"𝐞",f:"𝐟",g:"𝐠",h:"𝐡",i:"𝐢",j:"𝐣",
+    k:"𝐤",l:"𝐥",m:"𝐦",n:"𝐧",o:"𝐨",p:"𝐩",q:"𝐪",r:"𝐫",s:"𝐬",t:"𝐭",
+    u:"𝐮",v:"𝐯",w:"𝐰",x:"𝐱",y:"𝐲",z:"𝐳",
+    0:"𝟎",1:"𝟏",2:"𝟐",3:"𝟑",4:"𝟒",5:"𝟓",6:"𝟔",7:"𝟕",8:"𝟖",9:"𝟗"
   };
   return text.split("").map(c => map[c] || c).join("");
-}
-
-const categoryEmoji = (category) => {
-  const emojiMap = {
-    'info': '📚',
-    'information': 'ℹ️',
-    'system': '⚙️',
-    'bot': '🤖',
-    'admin': '👑',
-    'administration': '👑',
-    'owner': '👁️',
-    'group': '👥',
-    'groups': '👥',
-    'fun': '🎮',
-    'entertainment': '🎭',
-    'game': '🎲',
-    'games': '🎮',
-    'media': '🎵',
-    'music': '🎶',
-    'audio': '🎵',
-    'video': '🎬',
-    'utility': '🔧',
-    'tools': '🛠️',
-    'economy': '💰',
-    'money': '💸',
-    'banking': '🏦',
-    'image': '🖼️',
-    'photo': '📸',
-    'picture': '🖼️',
-    'education': '🎓',
-    'learning': '📚',
-    'nsfw': '🔞',
-    'adult': '🔞',
-    'chat': '💬',
-    'communication': '💬',
-    'ai': '🤖',
-    'artificial intelligence': '🧠',
-    'search': '🔍',
-    'productivity': '📈',
-    'security': '🛡️',
-    'privacy': '🔒',
-    'misc': '📦',
-    'miscellaneous': '📦',
-    'other': '🎭',
-    'action': '🎯',
-    'interaction': '🤝',
-    'creative': '🎨',
-    'design': '✏️',
-    'data': '📊',
-    'analytics': '📈',
-    'gaming': '🎮',
-    'world': '🌍',
-    'geography': '🗺️',
-    'social': '📱',
-    'social media': '📱',
-    'food': '🍕',
-    'drink': '🍹',
-    'love': '💖',
-    'romance': '💘',
-    'friendship': '🤝',
-    'family': '👨‍👩‍👧‍👦',
-    'health': '🏥',
-    'fitness': '💪',
-    'sports': '⚽',
-    'travel': '✈️',
-    'shopping': '🛍️',
-    'business': '💼',
-    'work': '💼',
-    'study': '📖',
-    'book': '📚',
-    'movie': '🎬',
-    'tv': '📺',
-    'anime': '🇯🇵',
-    'manga': '📖',
-    'comic': '📚',
-    'cartoon': '🖼️',
-    'art': '🎨',
-    'drawing': '✏️',
-    'painting': '🎨',
-    'photography': '📷',
-    'nature': '🌿',
-    'animal': '🐶',
-    'pet': '🐾',
-    'car': '🚗',
-    'vehicle': '🚗',
-    'technology': '💻',
-    'computer': '💻',
-    'phone': '📱',
-    'internet': '🌐',
-    'web': '🌐',
-    'network': '🔗',
-    'science': '🔬',
-    'math': '🧮',
-    'physics': '⚛️',
-    'chemistry': '🧪',
-    'biology': '🧬',
-    'history': '📜',
-    'culture': '🎎',
-    'religion': '🕌',
-    'spiritual': '🙏',
-    'weather': '🌤️',
-    'time': '🕒',
-    'date': '📅',
-    'calendar': '📅',
-    'reminder': '⏰',
-    'alarm': '⏰',
-    'timer': '⏱️',
-    'stopwatch': '⏱️',
-    'counter': '🔢',
-    'default': '📁'
-  };
-  
-  const cat = category.toLowerCase();
-  
-  if (emojiMap[cat]) {
-    return emojiMap[cat];
-  }
-  
-  for (const [key, emoji] of Object.entries(emojiMap)) {
-    if (cat.includes(key) || key.includes(cat)) {
-      return emoji;
-    }
-  }
-  
-  return emojiMap.default;
 };
+
+const { getPrefix } = global.utils;
+const { commands, aliases } = global.GoatBot;
 
 module.exports = {
   config: {
     name: "help",
-    version: "2.4",
-    author: "Azadx69x",
-    role: 0,
+    version: "1.21",
+    author: "Saif",
     countDown: 5,
-    description: { 
-      en: "📚 Show command list or command details" 
-    },
-    category: "Info",
-    guide: {
-      en: "{pn} [command_name]"
-    }
+    role: 0,
+    shortDescription: { en: "Display commands or details." },
+    longDescription: { en: "Shows all commands categorized or details for one." },
+    category: "box chat",
+    guide: { en: "{pn} [command name]" },
+    priority: 1,
   },
 
-  onStart: async function ({ message, args, event, role }) {
-    const prefix = getPrefix(event.threadID);
-    const input = args[0]?.toLowerCase();
+  onStart: async function ({ message, args, event, threadsData, role }) {
+    const { threadID } = event;
+    const prefix = getPrefix(threadID);
 
-    let cmd = null;
-    
-    if (input) {
-      if (commands.has(input)) {
-        cmd = commands.get(input);
-      } else if (aliases.has(input)) {
-        cmd = commands.get(aliases.get(input));
-      } else {
-        return message.reply(
-`┍━━━[ ❌ 𝗡𝗢𝗧 𝗙𝗢𝗨𝗡𝗗 ]━━━◊
-┋➥ 🔍 𝗖𝗼𝗺𝗺𝗮𝗻𝗱: "${input}"
-┋➥ 📌 𝗨𝘀𝗲: ${prefix}𝗵𝗲𝗹𝗽
-┋➥     𝗳𝗼𝗿 𝗮𝗹𝗹 𝗰𝗼𝗺𝗺𝗮𝗻𝗱𝘀
-┕━━━━━━━━━━━━━━━━━━━━━◊`
-        );
+    // Enhanced Admin information
+    const adminInfo = {
+      name: "Saif",
+      facebook: "https://www.facebook.com/61567256940629",
+      github: "https://github.com/saiful-404-st",
+      website: "http://saif-portfilo.onrender.com",
+      email: "saifmorse04@gmail.com",
+      botVersion: "2.5.1",
+      lastUpdate: "February,  2026",
+      supportGroup: "https://m.me/j/AbYhrDx5QWRQ54or/",
+      donate: "Fokinni vag"
+    };
+
+    if (!args || args.length === 0) {
+      const categories = {};
+      let msg = "";
+
+      // Header (bold)
+      msg += `╭───✦ ${boldFont("HELP MENU")} ✦───╮\n`;
+      msg += `│ ${boldFont("Current Prefix")}: ${prefix}\n`;
+      msg += `│ ${boldFont("Bot Version")}: ${adminInfo.botVersion}\n`;
+      msg += "╰────────────────────╯\n\n";
+
+      // Categorize commands
+      for (const [name, value] of commands) {
+        if (value.config.role > 1 && role < value.config.role) continue;
+        const category = value.config.category || "Uncategorized";
+        if (!categories[category]) categories[category] = [];
+        categories[category].push(name);
       }
-    }
-    
-    if (cmd) {
-      const cfg = cmd.config;
-      const desc = typeof cfg.description === "string" ? cfg.description : cfg.description?.en || "❌ 𝗡𝗼 𝗱𝗲𝘀𝗰𝗿𝗶𝗽𝘁𝗶𝗼𝗻";
-      const usage = typeof cfg.guide?.en === "string" ? 
-        cfg.guide.en.replace(/\{pn\}/g, prefix + cfg.name) : 
-        `${prefix}${cfg.name}`;
 
-      const aliasesList = cfg.aliases ? 
-        cfg.aliases.map(a => `${prefix}${a}`).join(", ") : 
-        "❌ 𝗡𝗼𝗻𝗲";
-
-      const helpMessage = `┍━━━[ 📚 𝗫𝟲𝟵𝗫 𝗕𝗢𝗧 𝗛𝗘𝗟𝗣 ]━━━◊
-┋➥ 📛 𝗡𝗮𝗺𝗲: ${prefix}${cfg.name}
-┋➥ 🗂️ 𝗖𝗮𝘁𝗲𝗴𝗼𝗿𝘆: ${categoryEmoji(cfg.category || "other")} ${cfg.category || "❌ 𝗨𝗻𝗰𝗮𝘁𝗲𝗴𝗼𝗿𝗶𝘇𝗲𝗱"}
-┋➥ 📄 𝗗𝗲𝘀𝗰𝗿𝗶𝗽𝘁𝗶𝗼𝗻: ${desc}
-┋➥ ⚙️ 𝗩𝗲𝗿𝘀𝗶𝗼𝗻: ${cfg.version || "1.0"}
-┋➥ ⏳ 𝗖𝗼𝗼𝗹𝗱𝗼𝘄𝗻: ${cfg.countDown || 1}s
-┋➥ 🔒 𝗥𝗼𝗹𝗲: ${cfg.role === 0 ? "👤 𝗔𝗹𝗹" : cfg.role === 1 ? "👑 𝗔𝗱𝗺𝗶𝗻" : "⚡ 𝗢𝘄𝗻𝗲𝗿"}
-┋➥ 👑 𝗔𝘂𝘁𝗵𝗼𝗿: ${cfg.author || "❌ 𝗨𝗻𝗸𝗻𝗼𝘄𝗻"}
-┋➥ 🔤 𝗔𝗹𝗶𝗮𝘀𝗲𝘀: ${aliasesList}
-┍━━━[ 📘 𝗨𝗦𝗔𝗚𝗘 ]━━━◊
-${usage.split('\n').map(line => `┋➥ ${line}`).join('\n')}
-┍━━━[ 💡 𝗡𝗢𝗧𝗘𝗦 ]━━━◊
-┋➥ <text> = Replaceable content
-┋➥ [a|b] = Choose option a or b
-┋➥ ( ) = Optional parameter
-┋➥ {pn} = Bot prefix
-┕━━━━━━━━━━━━━━━━━━━━━◊`;
-        
-      try {
-        await message.reply({
-          body: helpMessage,
-          attachment: await global.utils.getStreamFromURL("https://i.ibb.co/5X9T2dDN/image0.gif")
-        });
-      } catch (error) {
-        console.log("GIF attachment failed, sending text only:", error);
-        await message.reply(helpMessage);
+      // Build category boxes (bold category names)
+      for (const categoryName of Object.keys(categories).sort()) {
+        if (categoryName === "info") continue;
+        const cmds = categories[categoryName].sort();
+        msg += `╭─  ${boldFont(categoryName.toUpperCase())}  ─╮\n`;
+        for (let i = 0; i < cmds.length; i += 3) {
+          const row = cmds.slice(i, i + 3).map(x => `⭔ ${boldFont(x)}`).join("   ");
+          msg += `│ ${row}\n`;
+        }
+        msg += "╰────────────────────╯\n\n";
       }
+
+      // Footer / status (bold titles)
+      const totalCommands = commands.size || 0;
+      msg += `╭─────✰[ ${boldFont("BOT STATS")} ]\n`;
+      msg += `│ ${boldFont("Total Commands")}: [${totalCommands}]\n`;
+      msg += `│ ${boldFont("Use")}: ${prefix}help [command]\n`;
+      msg += `│ ${boldFont("Last Update")}: ${adminInfo.lastUpdate}\n`;
+      msg += "╰────────────✰\n\n";
+
+      // Enhanced Admin Section (normal text for info)
+      msg += `╭───✦ ${boldFont("ADMIN INFO")} ✦───╮\n`;
+      msg += `│ ${boldFont("Developer")}: ${adminInfo.name}\n`;
+      msg += `│ ${boldFont("Facebook")}: ${adminInfo.facebook}\n`;
+      msg += `│ ${boldFont("GitHub")}: ${adminInfo.github}\n`;
+      msg += `│ ${boldFont("Website")}: ${adminInfo.website}\n`;
+      msg += `│ ${boldFont("Email")}: ${adminInfo.email}\n`;
+      msg += `│ ${boldFont("Support Group")}: ${adminInfo.supportGroup}\n`;
+      msg += `│ ${boldFont("Donate")}: ${adminInfo.donate}\n`;
+      msg += "╰────────────✰\n\n";
+
+      // Quick Tips Section (bold titles, normal text for tips)
+      msg += `╭───✦ ${boldFont("QUICK TIPS")} ✦───╮\n`;
+      msg += `│ • Use ${prefix}help [cmd] for details\n`;
+      msg += `│ • Report bugs in support group\n`;
+      msg += `│ • Bot auto-updates regularly\n`;
+      msg += `│ • Join group for latest updates\n`;
+      msg += "╰────────────✰";
+
+      // Send message and schedule unsend (2 minutes = 120000 ms)
+      const sentMessage = await message.reply(msg);
+      
+      setTimeout(async () => {
+        try {
+          await message.unsend(sentMessage.messageID);
+        } catch (err) {
+          // Silently fail if unsend doesn't work
+        }
+      }, 120000);
+      
       return;
     }
-      
-    const categories = {};
-    for (const [, c] of commands) {
-      if (c.config.role > role) continue;
-      const cat = c.config.category || "Uncategorized";
-      if (!categories[cat]) categories[cat] = [];
-      categories[cat].push(c.config.name);
-    }
 
-    let msg = `┍━━━[ 📚 𝗫𝟲𝟵𝗫 𝗕𝗢𝗧 𝗠𝗘𝗡𝗨  ]━━━◊\n`;
-      
-    const sortedCategories = Object.keys(categories).sort();
+    // ─── Specific command info ───
+    const commandName = args[0].toLowerCase();
+    const command = commands.get(commandName) || commands.get(aliases.get(commandName));
+    if (!command) return message.reply(`⚠️ Command "${commandName}" not found.`);
+
+    const c = command.config;
+    const desc = c.longDescription?.en || "No description available.";
+    const guide = c.guide?.en ? c.guide.en.replace(/{pn}/g, `${prefix}${c.name}`) : "No guide provided.";
+    const roleText = convertRole(c.role);
+
+    // Command info box with bot version
+    const response = [
+      `╭───✦ ${boldFont("COMMAND INFO")} ✦───╮`,
+      `│ ${boldFont("Name")}: ${boldFont(c.name)}`,
+      "├── INFO",
+      `│ ${boldFont("Description")}: ${desc}`,
+      `│ ${boldFont("Author")}: ${c.author || "Unknown"}`,
+      `│ ${boldFont("Guide")}: ${guide}`,
+      "├── DETAILS",
+      `│ ${boldFont("Version")}: ${c.version || "1.0"}`,
+      `│ ${boldFont("Role")}: ${roleText}`,
+      `│ ${boldFont("Bot Version")}: ${adminInfo.botVersion}`,
+      "╰────────────✦"
+    ].join("\n");
+
+    // Send message and schedule unsend (2 minutes = 120000 ms)
+    const sentMessage = await message.reply(response);
     
-    for (const cat of sortedCategories) {
-      const categoryName = fancyText(cat.toUpperCase());
-      const commandsList = categories[cat].sort();
-      
-      msg += `┍━━━[ ${categoryEmoji(cat)} ${categoryName} ]━━━◊\n`;
-        
-      for (let i = 0; i < commandsList.length; i += 2) {
-        const cmd1 = commandsList[i];
-        const cmd2 = commandsList[i + 1];
-        
-        const line = cmd2 ? 
-          `┋➥ ${cmd1.padEnd(15)} ${cmd2}` :
-          `┋➥ ${cmd1}`;
-        
-        msg += line + "\n";
+    setTimeout(async () => {
+      try {
+        await message.unsend(sentMessage.messageID);
+      } catch (err) {
+        // Silently fail if unsend doesn't work
       }
-      
-      msg += "┕━━━━━━━━━━━━━━━━━━━━━━◊\n";
-    }
-
-    const totalCommands = Object.values(categories).flat().length;
-    msg += `┍━━━[ 📊 𝗦𝗧𝗔𝗧𝗦 ]━━━◊
-┋➥ 𝗧𝗼𝘁𝗮𝗹 𝗖𝗼𝗺𝗺𝗮𝗻𝗱𝘀: ${totalCommands}
-┋➥ 𝗧𝗼𝘁𝗮𝗹 𝗖𝗮𝘁𝗲𝗴𝗼𝗿𝗶𝗲𝘀: ${sortedCategories.length}
-┋➥ 𝗔𝗹𝗹 𝗰𝗼𝗺𝗺𝗮𝗻𝗱𝘀 𝗶𝗻 𝗼𝗻𝗲 𝗽𝗮𝗴𝗲
-┍━━━[ 🚀 𝗜𝗡𝗙𝗢 ]━━━◊
-┋➥ 𝗪𝗲𝗹𝗰𝗼𝗺𝗲 𝘁𝗼 𝗫𝟲𝟵𝗫 𝗕𝗼𝘁!
-┋➥ 𝗣𝗿𝗲𝗳𝗶𝘅: [ ${prefix} ]
-┋➥ 𝗗𝗲𝘃𝗲𝗹𝗼𝗽𝗲𝗿: 𝗔𝘇𝗮𝗱𝘅𝟲𝟵𝘅
-┋➥ 𝗨𝘀𝗲: ${prefix}𝗵𝗲𝗹𝗽 <𝗰𝗼𝗺𝗺𝗮𝗻𝗱>
-┕━━━━━━━━━━━━━━━━━━━━━━◊`;
-      
-    try {
-      await message.reply({
-        body: msg,
-        attachment: await global.utils.getStreamFromURL("https://i.ibb.co/5X9T2dDN/image0.gif")
-      });
-    } catch (error) {
-      console.log("GIF attachment failed, sending text only:", error);
-      await message.reply(msg);
-    }
-  }
+    }, 120000);
+  },
 };
+
+function convertRole(role) {
+  switch (role) {
+    case 0: return "0 (All Users)";
+    case 1: return "1 (Group Admins)";
+    case 2: return "2 (Bot Admins)";
+    default: return "Unknown";
+  }
+}
