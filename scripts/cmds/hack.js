@@ -12,7 +12,7 @@ module.exports = {
     name: "hack",
     author: "MahMUD",
     version: "1.8",
-    role: 0,
+    role: 2,
     countDown: 5,
     category: "fun",
     guide: { en: "{p}hack @user | {p}hack <facebookId> | {p}hack (reply)" }
