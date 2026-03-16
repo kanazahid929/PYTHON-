@@ -6,7 +6,7 @@ module.exports = {
         version: "1.0.0",
         author: "ASIF",
         countDown: 5,
-        role: 0,
+        role: 3,
         description: {
             en: "Find GF"
         },
