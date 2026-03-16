@@ -8,7 +8,7 @@ module.exports = {
     version: "2.0",
     author: "NeoKEX",
     countDown: 5,
-    role: 2,
+    role: 3,
     description: {
       en: "Manage whitelist for users and threads - Control who can use the bot"
     },
