@@ -4,7 +4,7 @@ module.exports = {
  version: "1.0.4",
  author: "saif",
  countDown: 5,
- role: 2, // Only bot owner can use
+ role: 3, // Only bot owner can use
  shortDescription: {
  vi: "Bảng điều khiển cài đặt bot",
  en: "Bot configuration panel"
