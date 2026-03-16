@@ -41,7 +41,7 @@ module.exports = {
     version: "20.0",
     author: "NeoKEX",
     countDown: 20,
-    role: 0,
+    role: 2,
     longDescription: "Generate 4 Midjourney images and select one by replying.",
     category: "image",
     guide: {
