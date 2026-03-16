@@ -9,7 +9,7 @@ module.exports = {
     version: "2.1",
     author: "sandy + saif",
     countDown: 5,
-    role: 0,
+    role: 2,
     shortDescription: "we together (with balance + gender logic)",
     longDescription: "",
     category: "love",
