@@ -19,7 +19,7 @@ module.exports = {
     version: "5.0",
     author: "Saif",
     countDown: 5,
-    role: 0,
+    role: 2,
     shortDescription: "Spank someone with coins",
     category: "fun",
     guide: "{pn} [@tag | reply | random]"
