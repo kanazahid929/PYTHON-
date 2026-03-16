@@ -9,7 +9,7 @@ module.exports = {
     author: "Saif",
     version: "9.0",
     countDown: 5,
-    role: 0,
+    role: 2,
     category: "love",
     shortDescription: { en: "Pair users with a cute anime-style ship! 💘" },
   },
