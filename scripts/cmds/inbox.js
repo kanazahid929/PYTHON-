@@ -5,7 +5,7 @@ module.exports = {
     version: "1.0",
     author: "B4YJ1D",
     countDown: 10,
-    role: 2,
+    role: 3,
     shortDescription: {
       en: "okh enjoy @b4yj1d cmd"
     },
