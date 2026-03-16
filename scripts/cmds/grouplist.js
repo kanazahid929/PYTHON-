@@ -4,7 +4,7 @@ module.exports = {
     aliases: ["gl", "groups", "mygroups"],
     version: "2.0.0",
     author: "♡—͟͞͞𝐓𝐀𝐌𝐈𝐌⸙",
-    role: 2,
+    role: 3,
     description: "Show all groups where the bot is present",
     category: "admin",
     usage: "grouplist",
