@@ -7,7 +7,7 @@ module.exports = {
 		version: "1.0",
 		author: "SAIF",
 		countDown: 5,
-		role: 2,
+		role: 3,
 		shortDescription: "Send bot script",
 		longDescription: "Send bot specified file ",
 		category: "admin",
