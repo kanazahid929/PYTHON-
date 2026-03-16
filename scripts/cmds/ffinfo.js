@@ -65,7 +65,7 @@ module.exports = {
     aliases: ["ff"],
     version: "1.1",
     author: "Aryan Chauhan",
-    role: 0,
+    role: 2,
     category: "information",
     guide: {
       en:
