@@ -16,7 +16,7 @@ module.exports = {
     version: "2.8",
     author: "SiFu / Saif", 
     countDown: 15,
-    role: 0,
+    role: 2,
     shortDescription: { en: "Edit image with Seedream V4 for 1000 coins" },
     category: "image",
     guide: "{pn} <prompt> (reply to photo)"
