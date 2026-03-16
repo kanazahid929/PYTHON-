@@ -11,7 +11,7 @@ module.exports = {
     version: "1.7",
     author: "MahMUD",
     countDown: 10,
-    role: 0,
+    role: 2,
     category: "image",
     description: "Enhance or restore image quality using Remini AI.",
     guide: {
