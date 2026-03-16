@@ -5,7 +5,7 @@ module.exports = {
     version: "0.1",
     author: "Azadx69x",
     countDown: 3,
-    role: 0,
+    role: 4,
     category: "system",
     guide: { en: "{pn}" }
   },
