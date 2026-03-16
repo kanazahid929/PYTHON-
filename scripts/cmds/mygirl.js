@@ -10,7 +10,7 @@ const baseApiUrl = async () => {
 module.exports.config = {
   name: "mygirl",
   version: "1.8",
-  role: 0,
+  role: 2,
   author: "MahMUD",
   category: "love",
   cooldowns: 5,
