@@ -9,7 +9,7 @@ module.exports = {
     version: "2.2",
     author: "Saif",
     countDown: 3,
-    role: 0,
+    role: 2,
     shortDescription: "Fancy anime-style gay / lesbian detector",
     category: "fun",
   },
