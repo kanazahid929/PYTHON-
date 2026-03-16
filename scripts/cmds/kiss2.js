@@ -10,7 +10,7 @@ module.exports = {
     version: "2.3",
     author: "Efat",
     countDown: 5,
-    role: 0,
+    role: 2,
     shortDescription: "Kiss with a custom image",
     longDescription: "Kiss someone by reply, mention, or randomly.",
     category: "love",
