@@ -10,7 +10,7 @@ module.exports = {
     version: "1.1",
     author: "Amit Max ⚡",
     countDown: 5,
-    role: 0,
+    role: 2,
     shortDescription: "Give someone a hug!",
     longDescription: "A fun command to give someone a hug with a picture.",
     category: "love",
