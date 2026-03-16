@@ -1,202 +1,81 @@
-const axios = require("axios");
+const axios = require('axios');
+const yts = require("yt-search");
 const fs = require("fs");
 const path = require("path");
+const { performance } = require('perf_hooks');
 
-async function fetchStream(url) {
-  const res = await axios({ url, responseType: "stream", timeout: 10000 });
-  return res.data;
-}
+const formatText = (text) => {
+  const mapping = {
+    'a': '𝐚', 'b': '𝐛', 'c': '𝐜', 'd': '𝐝', 'e': '𝐞', 'f': '𝐟', 'g': '𝐠', 'h': '𝐡', 'i': '𝐢', 'j': '𝐣', 'k': '𝐤', 'l': '𝐥', 'm': '𝐦', 'n': '𝐧', 'o': '𝐨', 'p': '𝐩', 'q': '𝐪', 'r': '𝐫', 's': '𝐬', 't': '𝐭', 'u': '𝐮', 'v': '𝐯', 'w': '𝐰', 'x': '𝐱', 'y': '𝐲', 'z': '𝐳',
+    'A': '𝐀', 'B': '𝐁', 'C': '𝐂', 'D': '𝐃', 'E': '𝐄', 'F': '𝐅', 'G': '𝐆', 'H': '𝐇', 'I': '𝐈', 'J': '𝐉', 'K': '𝐊', 'L': '𝐋', 'M': '𝐌', 'N': '𝐍', 'O': '𝐎', 'P': '𝐏', 'Q': '𝐐', 'R': '𝐑', 'S': '𝐒', 'T': '𝐓', 'U': '𝐔', 'V': '𝐕', 'W': '𝐖', 'X': '𝐗', 'Y': '𝐘', 'Z': '𝐙',
+    '0': '𝟎', '1': '𝟏', '2': '𝟐', '3': '𝟑', '4': '𝟒', '5': '𝟓', '6': '𝟔', '7': '𝟕', '8': '𝟖', '9': '𝟗'
+  };
+  return text.split('').map(char => mapping[char] || char).join('');
+};
 
 module.exports = {
   config: {
     name: "sing",
-    aliases: ["song", "music"],
-    version: "0.0.7",
-    author: "Azadx69x",
-    countDown: 5,
-    role: 0,
-    description: { en: "Search and download MP3 from YouTube" },
+    aliases: ["song"],
+    version: "1.1.0",
+    author: "bayjid+saif",
     category: "music",
-    guide: { en: "{pn} <song name>" }
+    shortDescription: "Fast Download with React",
+    guide: "{pn} <song name>"
   },
 
-  onStart: async function ({ api, args, event, commandName }) {
+  onStart: async function ({ api, event, args, usersData }) {
+    const start = performance.now();
     try {
-      const query = args.join(" ");
+      const COST = 500;
+      const sender = event.senderID;
+      const name = await usersData.getName(sender);
+      let user = await usersData.get(sender);
+
+      if ((user.money || 0) < COST) {
+        return api.sendMessage(`‎🎀\n > ${name}\n\n` + formatText(`• Baby, You need ${COST} coin to use this command! Use daily /quiz and Other game and come again!`), event.threadID, event.messageID);
+      }
+
+      if (!args[0]) return api.sendMessage(formatText("• Type a song name, Baby!"), event.threadID, event.messageID);
+
+      api.setMessageReaction("⏳", event.messageID, (err) => {}, true);
+
+      const vID = args[0].match(/(?:v=|\/)([0-9A-Za-z_-]{11})/) ? args[0].match(/(?:v=|\/)([0-9A-Za-z_-]{11})/)[1] : (await yts(args.join(" "))).videos[0]?.videoId;
       
-      if (!query) {
-        return api.sendMessage(
-          "❌ 𝐏𝐥𝐞𝐚𝐬𝐞 𝐩𝐫𝐨𝐯𝐢𝐝𝐞 𝐚 𝐬𝐨𝐧𝐠 𝐧𝐚𝐦𝐞!",
-          event.threadID,
-          event.messageID
-        );
+      if (!vID) {
+        api.setMessageReaction("❌", event.messageID, (err) => {}, true);
+        return api.sendMessage(formatText("• Not found, Baby!"), event.threadID, event.messageID);
       }
 
-      const apiURL = `https://xsaim8x-xxx-api.onrender.com/api/youtube?query=${encodeURIComponent(query)}`;
-      const res = await axios.get(apiURL, { timeout: 15000 });
+      await usersData.set(sender, { ...user, money: user.money - COST });
 
-      if (!res.data || !res.data.data || res.data.data.length === 0) {
-        return api.sendMessage(
-          "❌ 𝐍𝐨 𝐬𝐨𝐧𝐠𝐬 𝐟𝐨𝐮𝐧𝐝!",
-          event.threadID,
-          event.messageID
-        );
-      }
+      const { data } = await axios.get(`https://www.noobs-api.top/dipto/ytDl3?link=${vID}&format=mp3`);
+      if (!data.downloadLink) throw new Error();
 
-      const videos = res.data.data.slice(0, 6);
+      const tmp = path.join(__dirname, `cache`, `${Date.now()}.mp3`);
+      if (!fs.existsSync(path.join(__dirname, `cache`))) fs.mkdirSync(path.join(__dirname, `cache`));
 
-      let msg = "🎵 𝐘𝐨𝐮𝐓𝐮𝐛𝐞 𝐌𝐮𝐬𝐢𝐜 𝐑𝐞𝐬𝐮𝐥𝐭𝐬\n\n";
-      videos.forEach((v, i) => {
-        msg += `${i + 1}. ${v.title}\n`;
-        msg += `   👤 ${v.channel} | ⏱ ${v.duration}\n\n`;
+      const res = await axios({ url: data.downloadLink, method: "GET", responseType: "stream" });
+      const stream = res.data.pipe(fs.createWriteStream(tmp));
+
+      stream.on("finish", () => {
+        api.setMessageReaction("✅", event.messageID, (err) => {}, true);
+        
+        const time = ((performance.now() - start) / 1000).toFixed(2);
+        const msg = `‎🎀\n > ${name}\n\n` +
+          `• ` + formatText(`Baby, Your Song is Ready!`) + `\n` +
+          `• ` + formatText(`Deducted: ${COST}`) + `\n` +
+          `• ` + formatText(`Balance: ${user.money - COST}`) + `\n` +
+          `• ` + formatText(`Time: ${time}s Baby`);
+
+        api.sendMessage({ body: msg, attachment: fs.createReadStream(tmp) }, event.threadID, () => {
+          if (fs.existsSync(tmp)) fs.unlinkSync(tmp);
+        }, event.messageID);
       });
-      msg += "📌 𝐑𝐞𝐩𝐥𝐲 𝐰𝐢𝐭𝐡 𝐧𝐮𝐦𝐛𝐞𝐫 (𝟏-𝟔) 𝐭𝐨 𝐝𝐨𝐰𝐧𝐥𝐨𝐚𝐝 𝐌𝐏𝟑";
 
-      const attachments = await Promise.all(
-        videos.map(v => fetchStream(v.thumbnail).catch(() => null))
-      ).then(arr => arr.filter(Boolean));
-
-      api.sendMessage(
-        { body: msg, attachment: attachments },
-        event.threadID,
-        (err, sent) => {
-          if (err) return console.error(err);
-          
-          global.GoatBot.onReply.set(sent.messageID, {
-            commandName,
-            videos: videos,
-            messageID: sent.messageID,
-            threadID: event.threadID
-          });
-        },
-        event.messageID
-      );
-
-    } catch (err) {
-      console.error("[SING] onStart error:", err);
-      api.sendMessage(
-        `❌ 𝐒𝐞𝐚𝐫𝐜𝐡 𝐟𝐚𝐢𝐥𝐞𝐝: ${err.message}`,
-        event.threadID,
-        event.messageID
-      );
-    }
-  },
-
-  onReply: async function ({ event, api, Reply }) {
-    try {
-      const { videos, messageID } = Reply;
-      const choice = parseInt(event.body);
-
-      if (isNaN(choice) || choice < 1 || choice > videos.length) {
-        return api.sendMessage(
-          `❌ 𝐈𝐧𝐯𝐚𝐥𝐢𝐝 𝐜𝐡𝐨𝐢𝐜𝐞! 𝐓𝐲𝐩𝐞 𝟏-${videos.length}`,
-          event.threadID,
-          event.messageID
-        );
-      }
-
-      await api.unsendMessage(messageID).catch(() => {});
-
-      const selected = videos[choice - 1];
-
-      try {
-        const apiUrl = `https://azadx69x-all-apis-top.vercel.app/api/ytdown?url=${encodeURIComponent(selected.url)}`;
-        
-        console.log("Step 1 - Getting media info:", apiUrl);
-        
-        const apiRes = await axios.get(apiUrl, { timeout: 30000 });
-        
-        if (!apiRes.data || !apiRes.data.success || !apiRes.data.result) {
-          throw new Error("API request failed");
-        }
-        
-        const mediaItems = apiRes.data.result.api.mediaItems;
-        
-        if (!mediaItems || !Array.isArray(mediaItems) || mediaItems.length === 0) {
-          throw new Error("No media items found");
-        }
-        
-        let audioItem = mediaItems.find(item => 
-          item.type === "Audio" && item.mediaQuality === "128K"
-        );
-        
-        if (!audioItem) {
-          audioItem = mediaItems.find(item => item.type === "Audio");
-        }
-        
-        if (!audioItem || !audioItem.mediaUrl) {
-          throw new Error("No audio URL found");
-        }
-        
-        console.log("Step 2 - Getting download link from:", audioItem.mediaUrl);
-        
-        const linkRes = await axios.get(audioItem.mediaUrl, { 
-          timeout: 30000,
-          headers: {
-            'Accept': 'application/json',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-          }
-        });
-        
-        console.log("Link response:", JSON.stringify(linkRes.data, null, 2));
-        
-        if (!linkRes.data || !linkRes.data.fileUrl) {
-          throw new Error("No file URL in response");
-        }
-        
-        const downloadUrl = linkRes.data.fileUrl;
-        console.log("Step 3 - Downloading from:", downloadUrl);
-        
-        const fileRes = await axios({
-          url: downloadUrl,
-          responseType: "arraybuffer",
-          timeout: 120000,
-          maxContentLength: 50 * 1024 * 1024,
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-          }
-        });
-
-        if (!fileRes.data || fileRes.data.length < 10000) {
-          throw new Error("Downloaded file too small (" + (fileRes.data ? fileRes.data.length : 0) + " bytes)");
-        }
-
-        console.log("Downloaded size:", fileRes.data.length);
-
-        const fileName = "song_" + Date.now() + ".m4a";
-        const filePath = path.join(__dirname, fileName);
-        fs.writeFileSync(filePath, fileRes.data);
-
-        const stats = fs.statSync(filePath);
-        console.log("Saved file size:", stats.size);
-
-        await api.sendMessage(
-          {
-            attachment: fs.createReadStream(filePath)
-          },
-          event.threadID,
-          () => {
-            try { fs.unlinkSync(filePath); } catch (e) {}
-          },
-          event.messageID
-        );
-
-      } catch (err) {
-        console.error("[SING] Download error:", err);
-        api.sendMessage(
-          `❌ 𝐃𝐨𝐰𝐧𝐥𝐨𝐚𝐝 𝐟𝐚𝐢𝐥𝐞𝐝!\n📝 ${err.message}\n💡 𝐓𝐫𝐲 𝐚𝐧𝐨𝐭𝐡𝐞𝐫 𝐬𝐨𝐧𝐠`,
-          event.threadID,
-          event.messageID
-        );
-      }
-
-    } catch (err) {
-      console.error("[SING] onReply error:", err);
-      api.sendMessage(
-        "❌ 𝐄𝐫𝐫𝐨𝐫 𝐩𝐫𝐨𝐜𝐞𝐬𝐬𝐢𝐧𝐠 𝐬𝐞𝐥𝐞𝐜𝐭𝐢𝐨𝐧.",
-        event.threadID,
-        event.messageID
-      );
+    } catch (e) {
+      api.setMessageReaction("❌", event.messageID, (err) => {}, true);
+      api.sendMessage(formatText("• Error processing, Baby!"), event.threadID, event.messageID);
     }
   }
 };

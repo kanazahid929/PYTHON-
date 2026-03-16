@@ -3,64 +3,48 @@ const axios = require("axios");
 module.exports = {
   config: {
     name: "imgur",
-    version: "1.0.5",
-    role: 0,
-    author: "DUR4NTO | Azadx69x",
-    countDown: 0,
-    category: "imgur",
-    guide: {
-      en: "[reply to image or video]"
-    }
+    author: "MahMUD",
+   version: "1.7",
+    category: "media"
   },
-
   onStart: async function ({ api, event }) {
-    await this.uploadMedia(api, event);
-  },
-
-  uploadMedia: async function (api, event) {
-    let mediaUrl;
-
-    if (
-      event.type === "message_reply" &&
-      event.messageReply &&
-      event.messageReply.attachments &&
-      event.messageReply.attachments.length > 0
-    ) {
-      mediaUrl = event.messageReply.attachments[0].url;
-    } else if (event.attachments && event.attachments.length > 0) {
-      mediaUrl = event.attachments[0].url;
-    } else {
-      return api.sendMessage(
-        "❌ No media detected. Please reply to an image/video or attach one.",
-        event.threadID,
-        event.messageID
-      );
-    }
-
     try {
-      const endpoint = `https://azadx69x-all-apis-top.vercel.app/api/imgur?url=${encodeURIComponent(mediaUrl)}`;
-      const res = await axios.get(endpoint, { timeout: 20000 });
-      const data = res.data;
-
-      if (!data || data.success !== true || !data.url) {
+            const obfuscatedAuthor = String.fromCharCode(77, 97, 104, 77, 85, 68);
+      if (this.config.author !== obfuscatedAuthor) {
         return api.sendMessage(
-          "❌ Upload failed or invalid response from API.",
+          "You are not authorized to change the author name.\n\nPlease author fix name to work with this cmd",
           event.threadID,
           event.messageID
         );
       }
 
-      const reply = [
-        "✅ Upload Successful",
-        `🔗 URL: ${data.url}`
-      ].join("\n");
+   if (!event.messageReply || !event.messageReply.attachments) {
+        return api.sendMessage(
+          "❌ Please reply to an image or video message to upload it to Imgur.",
+          event.threadID,
+          event.messageID
+        );
+      }
 
-      return api.sendMessage(reply, event.threadID, event.messageID);
+      const attachment = event.messageReply.attachments[0].url;
 
-    } catch (err) {
-      console.error("Imgur upload error:", err);
-      return api.sendMessage(
-        "❌ Error uploading media. Try again later.",
+   const response = await axios.post(
+        "https://api.imgur.com/3/image",
+        { image: attachment, type: "url" },
+        {
+          headers: {
+            Authorization: "Client-ID 137256035dcfdcc"
+          }
+        }
+      );
+
+      const imgurLink = response.data.data.link;
+      api.sendMessage(`${imgurLink}`, event.threadID, event.messageID);
+
+    } catch (error) {
+      console.error(error.response?.data || error.message);
+      api.sendMessage(
+        `❌ Failed to upload to Imgur.\n${error.response?.data?.data?.error || error.message}`,
         event.threadID,
         event.messageID
       );
