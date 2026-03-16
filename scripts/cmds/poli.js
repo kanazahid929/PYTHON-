@@ -13,7 +13,7 @@ module.exports = {
     author: "MahMUD",
     version: "2.0",
     cooldowns: 10,
-    role: 0,
+    role: 2,
     category: "image",
     guide: { en: "{p}poli <prompt>" }
   },
