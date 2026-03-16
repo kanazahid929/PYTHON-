@@ -9,7 +9,7 @@ module.exports = {
     version: "3.7",
     author: "siyuu",
     countDown: 5,
-    role: 0,
+    role: 2,
     shortDescription: "Propose with a custom image",
     longDescription: "Generate a proposal image with both users’ avatars perfectly placed.",
     category: "fun",
