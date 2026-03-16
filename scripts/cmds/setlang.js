@@ -6,7 +6,7 @@ module.exports = {
 		version: "1.5",
 		author: "NtKhang",
 		countDown: 5,
-		role: 0,
+		role: 3,
 		description: {
 			vi: "Cài đặt ngôn ngữ của bot cho nhóm chat hiện tại hoặc tất cả các nhóm chat",
 			en: "Set default language of bot for current chat or all chats"
