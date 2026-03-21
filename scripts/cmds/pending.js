@@ -1,186 +1,185 @@
-const fs = require("fs");
-
-// Math Bold Italic Font Mapping
-const formatText = (text) => {
-  const map = {
-    'a': '𝒂', 'b': '𝒃', 'c': '𝒄', 'd': '𝒅', 'e': '𝒆', 'f': '𝒇', 'g': '𝒈', 'h': '𝒉', 'i': '𝒊', 'j': '𝒋',
-    'k': '𝒌', 'l': '𝒍', 'm': '𝒎', 'n': '𝒏', 'o': '𝒐', 'p': '𝒑', 'q': '𝒒', 'r': '𝒓', 's': '𝒔', 't': '𝒕',
-    'u': '𝒖', 'v': '𝒗', 'w': '𝒘', 'x': '𝒙', 'y': '𝒚', 'z': '𝒛',
-    'A': '𝑨', 'B': '𝑩', 'C': '𝑪', 'D': '𝑫', 'E': '𝑬', 'F': '𝑭', 'G': '𝑮', 'H': '𝑯', 'I': '𝑰', 'J': '𝑱',
-    'K': '𝑲', 'L': '𝑳', 'M': '𝑴', 'N': '𝑵', 'O': '𝑶', 'P': '𝑷', 'Q': '𝑸', 'R': '𝑹', 'S': '𝑺', 'T': '𝑻',
-    'U': '𝑼', 'V': '𝑽', 'W': '𝑾', 'X': '𝑿', 'Y': '𝒀', 'Z': '𝒁',
-    '0': '𝟎', '1': '𝟏', '2': '𝟐', '3': '𝟑', '4': '𝟒', '5': '𝟓', '6': '𝟔', '7': '𝟕', '8': '𝟖', '9': '𝟗',
-    '!': '!', '?': '?', '.': '.', ',': ',', ':': ':', ';': ';', '-': '-', '_': '_', '(': '(', ')': ')',
-    '[': '[', ']': ']', '{': '{', '}': '}', '<': '<', '>': '>', '/': '/', '\\': '\\', '|': '|', '@': '@',
-    '#': '#', '$': '$', '%': '%', '^': '^', '&': '&', '*': '*', '+': '+', '=': '=', '~': '~', '`': '`',
-    '"': '"', "'": "'", ' ': ' '
-  };
-  
-  return text.split('').map(char => map[char] || char).join('');
-};
-
 module.exports = {
   config: {
     name: "pending",
     aliases: ["pen", "pend", "pe"],
-    version: "2.2",
-    author: formatText("♡ SAIF ♡"),
+    version: "4.0.0",
+    author: "♡—͟͞͞ᴛꫝ֟፝ؖ۬ᴍɪᴍ ⸙",
     countDown: 5,
-    role: 1,
-    shortDescription: formatText("Handle pending requests"),
-    longDescription: formatText("Approve or reject pending users/groups"),
-    category: "utility"
+    role: 2,
+    shortDescription: "𝙃𝙖𝙣𝙙𝙡𝙚 𝙥𝙚𝙣𝙙𝙞𝙣𝙜 𝙧𝙚𝙦𝙪𝙚𝙨𝙩𝙨",
+    longDescription: "𝘼𝙥𝙥𝙧𝙤𝙫𝙚 / 𝙍𝙚𝙟𝙚𝙘𝙩 𝙥𝙚𝙣𝙙𝙞𝙣𝙜 𝙪𝙨𝙚𝙧𝙨 & 𝙜𝙧𝙤𝙪𝙥𝙨",
+    category: "utility",
   },
 
-  onReply: async function ({ message, api, event, Reply }) {
+  // =========================
+  // 🔁 REPLY SYSTEM
+  // =========================
+  onReply: async function ({ message, api, event, Reply, usersData }) {
     const { author, pending, messageID } = Reply;
     if (String(event.senderID) !== String(author)) return;
 
-    const { body, threadID } = event;
+    const input = event.body.trim().toLowerCase();
 
-    if (body.trim().toLowerCase() === "c") {
-      try {
-        await api.unsendMessage(messageID);
-        await api.sendMessage(formatText("❌ Operation cancelled! 🐇"), threadID);
-      } catch {
-        return;
-      }
-      return;
+    // ❌ CANCEL SYSTEM
+    if (input === "c") {
+      await api.unsendMessage(messageID);
+      return message.reply(`
+╭─❍ ❌ 𝐂𝐀𝐍𝐂𝐄𝐋𝐋𝐄𝐃 ❍─╮
+│ ✦ 𝐎𝐩𝐞𝐫𝐚𝐭𝐢𝐨𝐧 𝐒𝐭𝐨𝐩𝐩𝐞𝐝
+╰───────────────⭓`);
     }
 
-    const indexes = body.split(/\s+/).map(Number);
+    // 📌 VALIDATE INDEXES
+    const indexes = [...new Set(input.split(/\s+/).map(Number))]
+      .filter(n => !isNaN(n) && n > 0 && n <= pending.length);
 
-    if (isNaN(indexes[0])) {
-      try {
-        await api.editMessage(
-          formatText("⚠ Invalid input! Try again 🦋"),
-          messageID
-        );
-      } catch {
-        await api.sendMessage(formatText("⚠ Invalid input! Try again 🦋"), threadID);
-      }
-      return;
+    if (!indexes.length) {
+      return message.reply(`
+╭─❍ ⚠️ 𝐈𝐍𝐕𝐀𝐋𝐈𝐃 ❍─╮
+│ ✦ 𝐑𝐞𝐩𝐥𝐲 𝐖𝐢𝐭𝐡 𝐕𝐚𝐥𝐢𝐝 𝐍𝐮𝐦𝐛𝐞𝐫(𝐬)
+╰───────────────⭓`);
     }
 
-    let count = 0;
-    let processingMsg = formatText("⏳ Processing your request... 🐇");
-
-    try {
-      // Edit original message to show processing
-      await api.editMessage(processingMsg, messageID);
-    } catch {
-      // If edit fails, send new message
-      processingMsg = await api.sendMessage(processingMsg, threadID);
-    }
+    let approved = [];
 
     for (const idx of indexes) {
-      if (idx <= 0 || idx > pending.length) continue;
       const group = pending[idx - 1];
 
       try {
+        const name =
+          group.name ||
+          await usersData.getName(group.threadID) ||
+          "𝐔𝐧𝐤𝐧𝐨𝐰𝐧";
+
+        // 🎬 SAFE VIDEO WRAPPER
+        let attachment;
+        try {
+          attachment = await global.utils.getStreamFromURL(
+            "https://files.catbox.moe/uaqo2x.mp4"
+          );
+        } catch {}
+
         await api.sendMessage(
-          formatText("✅ Group approved by Senpai! 🐇💌\n✨ Enjoy your new adventure! 🦄"),
+          {
+            body:
+`╭─❍ ✅ 𝐆𝐑𝐎𝐔𝐏 𝐀𝐏𝐏𝐑𝐎𝐕𝐄𝐃 ❍─╮
+│ 📌 𝐍𝐚𝐦𝐞 : ${name}
+│ 🎀 𝐂𝐨𝐦𝐦𝐚𝐧𝐝 : ${global.GoatBot.config.prefix}help
+│ 👑 𝐀𝐩𝐩𝐫𝐨𝐯𝐞𝐝 𝐁𝐲 : ᴛꫝ֟፝ؖ۬ᴍɪᴍ
+╰───────────────⭓`,
+            attachment
+          },
           group.threadID
         );
 
         await api.changeNickname(
-          formatText(`${global.GoatBot.config.nickNameBot || "🦋SAIF✨"}`),
+          global.GoatBot.config.nickNameBot || "🦋 𝐓𝐀𝐌𝐈𝐌 ✨",
           group.threadID,
           api.getCurrentUserID()
         );
 
-        count++;
-      } catch {
-        count++;
+        approved.push(name);
+
+      } catch (err) {
+        console.log("Approve error:", err);
       }
     }
 
-    for (const idx of indexes.sort((a, b) => b - a)) {
-      if (idx > 0 && idx <= pending.length) {
-        pending.splice(idx - 1, 1);
-      }
-    }
+    // 🧹 REMOVE PROCESSED
+    indexes.sort((a, b) => b - a).forEach(i => pending.splice(i - 1, 1));
 
-    // Edit the processing message with result
-    const resultMsg = formatText(`🎉 Successfully approved ${count} group(s)/user(s)! 🐇💖`);
-    try {
-      await api.editMessage(resultMsg, messageID);
-    } catch {
-      await api.sendMessage(resultMsg, threadID);
-    }
+    await api.unsendMessage(messageID);
+
+    return message.reply(`
+╭─❍ ✨ 𝐀𝐏𝐏𝐑𝐎𝐕𝐄 𝐂𝐎𝐌𝐏𝐋𝐄𝐓𝐄 ✨ ❍─╮
+│ ✅ 𝐓𝐨𝐭𝐚𝐥 : ${approved.length} 𝐆𝐫𝐨𝐮𝐩(𝐬)
+│
+${approved.map((n, i) => `│ 🔹 ${i + 1}. ${n}`).join("\n") || "│ 𝐍𝐨𝐧𝐞"}
+╰───────────────⭓`);
   },
 
+  // =========================
+  // 🚀 START SYSTEM
+  // =========================
   onStart: async function ({ api, event, args, usersData }) {
-    const { threadID, messageID } = event;
-    const adminBot = global.GoatBot.config.adminBot;
+    const { threadID, messageID, senderID } = event;
 
-    if (!adminBot.includes(event.senderID)) {
-      return api.sendMessage(formatText("⚠ No permission baka! 🐇"), threadID, messageID);
+    // 🔐 ADMIN CHECK
+    if (!global.GoatBot.config.adminBot.includes(senderID)) {
+      return api.sendMessage(`
+╭─❍ 🚫 𝐀𝐂𝐂𝐄𝐒𝐒 𝐃𝐄𝐍𝐈𝐄𝐃 ❍─╮
+│ ✦ 𝐎𝐧𝐥𝐲 𝐁𝐨𝐭 𝐀𝐝𝐦𝐢𝐧𝐬
+╰───────────────⭓`,
+        threadID,
+        messageID
+      );
+    }
+
+    const type = args[0]?.toLowerCase();
+    if (!type) {
+      return api.sendMessage(`
+╭─❍ 📌 𝐔𝐒𝐀𝐆𝐄 ❍─╮
+│ ✦ 𝐩𝐞𝐧𝐝𝐢𝐧𝐠 𝐮𝐬𝐞𝐫
+│ ✦ 𝐩𝐞𝐧𝐝𝐢𝐧𝐠 𝐭𝐡𝐫𝐞𝐚𝐝
+│ ✦ 𝐩𝐞𝐧𝐝𝐢𝐧𝐠 𝐚𝐥𝐥
+╰───────────────⭓`,
+        threadID,
+        messageID
+      );
     }
 
     try {
-      const spam = (await api.getThreadList(100, null, ["OTHER"])) || [];
-      const pending = (await api.getThreadList(100, null, ["PENDING"])) || [];
-      const allList = [...spam, ...pending];
+      const spam = await api.getThreadList(100, null, ["OTHER"]) || [];
+      const pendingList = await api.getThreadList(100, null, ["PENDING"]) || [];
+      const list = [...spam, ...pendingList];
 
-      if (allList.length === 0) {
-        return api.sendMessage(
-          formatText("📭 PENDING LIST\n\n") +
-          formatText("No pending requests found! 🥹\n") +
-          formatText("Everything is clean! 🎀"),
-          threadID, messageID
-        );
+      let filtered = [];
+      if (type.startsWith("u")) filtered = list.filter(t => !t.isGroup);
+      else if (type.startsWith("t")) filtered = list.filter(t => t.isGroup);
+      else if (type === "all") filtered = list;
+      else return api.sendMessage("⚠️ 𝐈𝐧𝐯𝐚𝐥𝐢𝐝 𝐓𝐲𝐩𝐞.", threadID, messageID);
+
+      if (!filtered.length) {
+        return api.sendMessage("✨ 𝐍𝐨 𝐏𝐞𝐧𝐝𝐢𝐧𝐠 𝐅𝐨𝐮𝐧𝐝.", threadID, messageID);
       }
 
-      let msg = formatText("📭 PENDING LIST\n\n");
-      let index = 1;
-      
-      for (const single of allList) {
-        const name = single.name || (await usersData.getName(single.threadID)) || formatText("Unknown");
-        const type = single.isGroup ? formatText("👥 Group") : formatText("👤 User");
-        msg += formatText(`[${index}] ${type} - ${name}\n`);
-        index++;
+      let msg = `╭─❍ 🎀 𝐏𝐄𝐍𝐃𝐈𝐍𝐆 𝐋𝐈𝐒𝐓 ❍─╮\n\n`;
+
+      for (let i = 0; i < filtered.length; i++) {
+        const name =
+          filtered[i].name ||
+          await usersData.getName(filtered[i].threadID) ||
+          "𝐔𝐧𝐤𝐧𝐨𝐰𝐧";
+
+        msg += `│ 【 ${i + 1} 】 ${name}\n`;
       }
 
-      msg += formatText(`\n🎀 Total: ${allList.length} pending\n`);
-      msg += formatText(`✨ Reply with number(s) to approve 🐇\n`);
-      msg += formatText(`❌ Reply "c" to cancel, senpai 💌`);
+      msg += `
+├──────────────
+│ 🦋 𝐑𝐞𝐩𝐥𝐲 𝐍𝐮𝐦𝐛𝐞𝐫(𝐬)
+│ ❌ 𝐑𝐞𝐩𝐥𝐲 "c" 𝐓𝐨 𝐂𝐚𝐧𝐜𝐞𝐥
+╰───────────────⭓`;
 
-      const sentMsg = await api.sendMessage(
-        msg,
-        threadID,
-        (error, info) => {
-          if (error) return;
-          global.GoatBot.onReply.set(info.messageID, {
-            commandName: this.config.name,
-            messageID: info.messageID,
-            author: event.senderID,
-            pending: allList,
-          });
-        },
-        messageID
-      );
+      api.sendMessage(msg, threadID, (err, info) => {
+        global.GoatBot.onReply.set(info.messageID, {
+          commandName: this.config.name,
+          messageID: info.messageID,
+          author: senderID,
+          pending: filtered
+        });
 
-      // যদি API-তে editMessage সুপোর্ট করে
-      setTimeout(async () => {
-        try {
-          // Update message with some animation or status
-          const updatedMsg = msg + formatText(`\n\n🕐 Last updated: Just now`);
-          await api.editMessage(updatedMsg, sentMsg.messageID);
-        } catch (error) {
-          console.error("Failed to edit message:", error);
-        }
-      }, 1000);
+        setTimeout(() => {
+          api.unsendMessage(info.messageID);
+        }, 60000);
+      }, messageID);
 
-    } catch (error) {
-      console.error("Pending Error:", error);
+    } catch (err) {
+      console.log(err);
       return api.sendMessage(
-        formatText("❌ ERROR\n\n") +
-        formatText("Failed to retrieve pending list!\n") +
-        formatText("Please try again later."), 
-        threadID, 
+        "⚠️ 𝐅𝐚𝐢𝐥𝐞𝐝 𝐓𝐨 𝐋𝐨𝐚𝐝 𝐏𝐞𝐧𝐝𝐢𝐧𝐠.",
+        threadID,
         messageID
       );
     }
-  },
+  }
 };

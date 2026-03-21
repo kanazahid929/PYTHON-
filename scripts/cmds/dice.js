@@ -1,102 +1,94 @@
+// ===== FONT & UTILS =====
+const boldFontMap = {
+  a:"𝐚",b:"𝐛",c:"𝐜",d:"𝐝",e:"𝐞",f:"𝐟",g:"𝐠",h:"𝐡",i:"𝐢",j:"𝐣",
+  k:"𝐤",l:"𝐥",m:"𝐦",n:"𝐧",o:"𝐨",p:"𝐩",q:"𝐪",r:"𝐫",s:"𝐬",t:"𝐭",
+  u:"𝐮",v:"𝐯",w:"𝐰",x:"𝐱",y:"𝐲",z:"𝐳",
+  A:"𝐀",B:"𝐁",C:"𝐂",D:"𝐃",E:"𝐄",F:"𝐅",G:"𝐆",H:"𝐇",I:"𝐈",J:"𝐉",
+  K:"𝐊",L:"𝐋",M:"𝐌",N:"𝐍",O:"𝐎",P:"𝐏",Q:"𝐐",R:"𝐑",S:"𝐒",T:"𝐓",
+  U:"𝐔",V:"𝐕",W:"𝐖",X:"𝐗",Y:"𝐘",Z:"𝐙",
+  0:"𝟎",1:"𝟏",2:"𝟐",3:"𝟑",4:"𝟒",5:"𝟓",6:"𝟔",7:"𝟕",8:"𝟖",9:"𝟗"
+};
+const toBold = t => t.split("").map(c => boldFontMap[c] || c).join("");
+
+const smallBold = {"0":"𝟎","1":"𝟏","2":"𝟐","3":"𝟑","4":"𝟒","5":"𝟓","6":"𝟔","7":"𝟕","8":"𝟖","9":"𝟗",".":"."};
+const sb = n => n.toString().split("").map(c => smallBold[c] || c).join("");
+
 const parseShorthand = (str) => {
   if (!str) return NaN;
   str = str.toLowerCase();
-
-  const map = {
-    k: 1e3,
-    m: 1e6,
-    b: 1e9,
-    t: 1e12,
-    qd: 1e15,
-    qt: 1e18,
-    sx: 1e21,
-    sp: 1e24,
-    oc: 1e27,
-    no: 1e30,
-    dc: 1e33
-  };
-
-  let suffix = Object.keys(map).sort((a,b) => b.length - a.length).find(s => str.endsWith(s));
-  let multiplier = suffix ? map[suffix] : 1;
-
-  if (suffix) str = str.slice(0, -suffix.length);
-  const number = parseFloat(str);
-  return isNaN(number) ? NaN : number * multiplier;
+  const map = { k:1e3,m:1e6,b:1e9,t:1e12,qd:1e15,qt:1e18,sx:1e21,sp:1e24,oc:1e27,no:1e30,dc:1e33 };
+  const suffix = Object.keys(map).sort((a,b)=>b.length-a.length).find(s=>str.endsWith(s));
+  const multi = suffix ? map[suffix] : 1;
+  if (suffix) str = str.slice(0,-suffix.length);
+  const n = parseFloat(str);
+  return isNaN(n) ? NaN : n * multi;
 };
 
-const smallBoldNumbers = {
-  "0": "𝟎", "1": "𝟏", "2": "𝟐", "3": "𝟑", "4": "𝟒",
-  "5": "𝟓", "6": "𝟔", "7": "𝟕", "8": "𝟖", "9": "𝟗", ".": "."
-};
-
-function toSmallBoldNumber(num) {
-  return num.toString().split("").map(c => smallBoldNumbers[c] || c).join("");
-}
-
-function formatMoney(num) {
-  const suffixes = [
-    { value: 1e33, symbol: "𝐃𝐂" },
-    { value: 1e30, symbol: "𝐍𝐎" },
-    { value: 1e27, symbol: "𝐎𝐂" },
-    { value: 1e24, symbol: "𝐒𝐏" },
-    { value: 1e21, symbol: "𝐒𝐗" },
-    { value: 1e18, symbol: "𝐐𝐍" },
-    { value: 1e15, symbol: "𝐐𝐃" },
-    { value: 1e12, symbol: "𝐓" },
-    { value: 1e9, symbol: "𝐁" },
-    { value: 1e6, symbol: "𝐌" },
-    { value: 1e3, symbol: "𝐊" }
-  ];
-  for (const s of suffixes) {
-    if (num >= s.value) {
-      return toSmallBoldNumber((num / s.value).toFixed(2)) + s.symbol;
-    }
-  }
-  return toSmallBoldNumber(num);
-}
-
+// ===== MODULE =====
 module.exports = {
   config: {
     name: "dice",
-    aliases: [],
+    aliases: ["roll"],
     version: "2.0",
-    author: "SAIF",
+    author: "♡—͟͞͞𝐓𝐀𝐌𝐈𝐌⸙ x Gemini",
+    countDown: 5,
+    role: 0,
+    shortDescription: "60/40 Dice betting game 🎲",
     category: "game",
-    shortDescription: "🎲 roll a dice automatically with bet amount",
-    longDescription: "User gives amount, bot rolls dice automatically to see if user wins",
-    guide: { en: "{pn} <amount> - roll dice and bet automatically" },
+    guide: "{pn} <amount>"
   },
 
-  onStart: async function({ message, event, args, usersData }) {
-    const user = event.senderID;
-    const userData = await usersData.get(user);
+  onStart: async function ({ api, message, args, usersData, event }) {
+    const userId = event.senderID;
+    const threadID = event.threadID;
+    const bet = parseShorthand(args[0]);
 
-    const betInput = args[0];
-    const betAmount = parseShorthand(betInput);
+    if (isNaN(bet) || bet <= 0)
+      return message.reply("❌ | " + toBold("Enter a valid bet amount"));
 
-    if (isNaN(betAmount) || betAmount <= 0) 
-      return message.reply("⚠️ 𝐄𝐍𝐓𝐄𝐑 𝐀 𝐕𝐀𝐋𝐈𝐃 𝐀𝐌𝐎𝐔𝐍𝐓.");
-    if (userData.money < betAmount) 
-      return message.reply("💰 𝐍𝐎𝐓 𝐄𝐍𝐎𝐔𝐆𝐇 𝐁𝐀𝐋𝐀𝐍𝐂𝐄.");
+    const userData = await usersData.get(userId);
+    const money = userData.money || 0;
 
-    // Bot rolls dice automatically
-    const diceNum = Math.floor(Math.random() * 6) + 1;
-    const rolledDice = Math.floor(Math.random() * 6) + 1;
-    const isWin = rolledDice === diceNum;
-    const winnings = isWin ? betAmount * 2 : -betAmount;
+    if (bet > money)
+      return message.reply("🚫 | " + toBold("Not enough balance!"));
 
-    userData.money += winnings;
-    await usersData.set(user, userData);
+    // --- 60% Win Logic ---
+    const isWin = Math.random() < 0.60;
+    let dice;
+    
+    if (isWin) {
+      // Pick a winning number (4, 5, or 6)
+      dice = Math.floor(Math.random() * 3) + 4;
+    } else {
+      // Pick a losing number (1, 2, or 3)
+      dice = Math.floor(Math.random() * 3) + 1;
+    }
 
-    const resultMsg = `
-🎲 𝐘𝐎𝐔𝐑 𝐃𝐈𝐂𝐄: ${diceNum}
-🤖 𝐑𝐎𝐋𝐋𝐄𝐃: ${rolledDice}
+    const diceEmoji = { 1: "⚀", 2: "⚁", 3: "⚂", 4: "⚃", 5: "⚄", 6: "⚅" };
+    
+    // Calculate New Balance
+    const winAmount = isWin ? bet : -bet;
+    const newMoney = money + winAmount;
+    
+    await usersData.set(userId, { money: newMoney });
 
-${isWin ? ` 𝐘𝐎𝐔 𝐖𝐎𝐍 ${formatMoney(betAmount)}!` : ` 𝐘𝐎𝐔 𝐋𝐎𝐒𝐓 ${formatMoney(betAmount)}.`}
+    // Result Message
+    const resultHeader = isWin 
+      ? `🎉 ${toBold("VICTORY")}` 
+      : `💀 ${toBold("DEFEAT")}`;
 
- 𝐁𝐀𝐋𝐀𝐍𝐂𝐄: ${formatMoney(userData.money)}
-`;
+    const resMsg = `
+┏━━━━━ 🎲 𝐃𝐈𝐂𝐄 ━━━━━┓
+      ${resultHeader}
+┗━━━━━━━━━━━━━━━━━━━━┛
 
-    return message.reply(resultMsg.trim());
+  ◈ ${toBold("Result")}: ${diceEmoji[dice]} (${sb(dice)})
+  ◈ ${toBold("Profit")}: ${isWin ? "+" : "-"}${sb(bet)}
+  ◈ ${toBold("Wallet")}: ${sb(newMoney)}
+
+   ${isWin ? "🔥 𝐘𝐨𝐮'𝐫𝐞 𝐨𝐧 𝐚 𝐫𝐨𝐥𝐥!" : "💸 𝐃𝐨𝐧'𝐭 𝐠𝐢𝐯𝐞 𝐮𝐩, 𝐛𝐛𝐲!"}
+    `.trim();
+
+    return message.reply(resMsg);
   }
 };

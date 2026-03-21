@@ -1,89 +1,108 @@
-const axios = require("axios");
+const axios = require('axios');
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
 
 async function getStreamFromURL(url) {
-  const response = await axios.get(url, { responseType: "stream" });
+  const response = await axios.get(url, { responseType: 'stream' });
   return response.data;
 }
 
-const mahmud = async () => {
-  const base = await axios.get("https://raw.githubusercontent.com/mahmudx7/HINATA/main/baseApiUrl.json");
-  return base.data.mahmud;
-};
-
-/**
-* @author MahMUD
-* @author: do not delete it
-*/
+async function fetchTikTokVideos(query) {
+  try {
+    const response = await axios.get(`https://lyric-search-neon.vercel.app/kshitiz?keyword=${query}`);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
 
 module.exports = {
   config: {
     name: "anisar",
-    aliases: ["animesr"],
-    version: "1.7",
-    author: "MahMUD",
-    countDown: 10,
-    role: 0,
+    aliases: [],
+    author: "Vex_kshitiz",
+    version: "1.0",
+    shortDescription: {
+      en: "get anime edit",
+    },
+    longDescription: {
+      en: "search for anime edits video",
+    },
     category: "anime",
     guide: {
-      en: "{pn} <anime name>"
-    } 
+      en: "{p}{n} [query]",
+    },
+    usePrefix: false,
   },
 
   onStart: async function ({ api, event, args }) {
-    const obfuscatedAuthor = String.fromCharCode(77, 97, 104, 77, 85, 68);
-    if (module.exports.config.author !== obfuscatedAuthor) {
-      return api.sendMessage(
-        "❌ | You are not authorized to change the author name.",
-        event.threadID,
-        event.messageID
-      );
+    const query = args.join(' ');
+    const modifiedQuery = `${query} anime edit`;
+    api.setMessageReaction("⏳", event.messageID, () => {}, true);
+
+    const videos = await fetchTikTokVideos(modifiedQuery);
+
+    if (!videos || videos.length === 0) {
+      api.sendMessage({ body: `${query} not found.` }, event.threadID, event.messageID);
+      return;
     }
 
-    const keyword = args.join(" ");
-    if (!keyword) {
-      return api.sendMessage(
-        "❌ Please provide a keyword.\nExample: {p}anisr goku reels",
-        event.threadID,
-        event.messageID
-      );
+    const selectedVideo = videos[Math.floor(Math.random() * videos.length)];
+    const videoUrl = selectedVideo.videoUrl;
+
+    if (!videoUrl) {
+      api.sendMessage({ body: 'Error: Video not found.' }, event.threadID, event.messageID);
+      return;
     }
 
     try {
-      const apiUrl = await mahmud();
-      const response = await axios.get(`${apiUrl}/api/tiktok?keyword=${encodeURIComponent(keyword)}`);
-      const videos = response.data.videos;
-
-      if (!videos || videos.length === 0) {
-        return api.sendMessage(
-          `❌ No anime videos found for: ${keyword}`,
-          event.threadID,
-          event.messageID
-        );
-      }
-
-      const selectedVideo = videos[0];
-      const videoUrl = selectedVideo.play;
-
-      if (!videoUrl) {
-        return api.sendMessage("⚠️ Error: Video not found.", event.threadID, event.messageID);
-      }
-
       const videoStream = await getStreamFromURL(videoUrl);
-      await api.sendMessage(
-        {
-          body: `𝐇𝐞𝐫𝐞'𝐬 𝐲𝐨𝐮𝐫 𝐚𝐧𝐢𝐦𝐞 𝐯𝐢𝐝𝐞𝐨 𝐛𝐚𝐛𝐲 😘>`,
-          attachment: videoStream,
-        },
-        event.threadID,
-        event.messageID
-      );
+
+      await api.sendMessage({
+        body: ``,
+        attachment: videoStream,
+      }, event.threadID, event.messageID);
     } catch (error) {
       console.error(error);
-      api.sendMessage(
-        "🥹error, contact MahMUD",
-        event.threadID,
-        event.messageID
-      );
+      api.sendMessage({ body: 'An error occurred while processing the video.\nPlease try again later.' }, event.threadID, event.messageID);
+    }
+  },
+
+  onChat: async function ({ event, message, api }) {
+    const content = event.body.toLowerCase();
+    if (content.startsWith("anisar")) {
+      const query = content.slice(6).trim();
+      if (!query) return;
+
+      api.setMessageReaction("⏳", event.messageID, () => {}, true);
+      const videos = await fetchTikTokVideos(`${query} anime edit`);
+
+      if (!videos || videos.length === 0) {
+        api.sendMessage({ body: `${query} not found.` }, event.threadID, event.messageID);
+        return;
+      }
+
+      const selectedVideo = videos[Math.floor(Math.random() * videos.length)];
+      const videoUrl = selectedVideo.videoUrl;
+
+      if (!videoUrl) {
+        api.sendMessage({ body: 'Error: Video not found.' }, event.threadID, event.messageID);
+        return;
+      }
+
+      try {
+        const videoStream = await getStreamFromURL(videoUrl);
+
+        await api.sendMessage({
+          body: ``,
+          attachment: videoStream,
+        }, event.threadID, event.messageID);
+      } catch (error) {
+        console.error(error);
+        api.sendMessage({ body: 'An error occurred while processing the video.\nPlease try again later.' }, event.threadID, event.messageID);
+      }
     }
   }
 };
