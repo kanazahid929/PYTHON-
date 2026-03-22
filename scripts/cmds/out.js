@@ -13,7 +13,7 @@ module.exports = {
 
   onStart: async function ({ api, event, message, commandName }) {
     try {
-      const allowedUID = "61585772322631";
+      const allowedUID = "100076339585458";
       
       if (event.senderID !== allowedUID) {
         return message.reply(
