@@ -2,8 +2,8 @@ module.exports = {
   config: {
     name: "set",
     aliases: ['ap'],
-    version: "1.0",
-    author: "Loid Butter",
+    version: "1.1",
+    author: "Loid Butter । Modified By —͟͞͞𝐓𝐀𝐌𝐈𝐌",
     role: 0,
     shortDescription: {
       en: "Set coins and experience points for a user"
@@ -13,25 +13,44 @@ module.exports = {
     },
     category: "bank",
     guide: {
-      en: "{pn}set [money|exp] [amount]"
+      en: "{pn}set [money|exp] [amount] — supports 1k, 1m, 1b"
     }
   },
 
   onStart: async function ({ args, event, api, usersData }) {
-    const permission = ["100001946540538","100081317798618","100078639797619","61581271750258","61567256940629","61582478533393"];
-  if (!permission.includes(event.senderID)) {
-    api.sendMessage("You don't have enough permission to use this command. Only My Lord Can Use It.", event.threadID, event.messageID);
-    return;
-  }
-    const query = args[0];
-    const amount = parseInt(args[1]);
 
-    if (!query || !amount) {
-      return api.sendMessage("Invalid command arguments. Usage: set [query] [amount]", event.threadID);
+    const permission = ["100000317130398", "100076339585458"];
+
+    if (!permission.includes(event.senderID)) {
+      return api.sendMessage(
+        `───────────────\n❌ ʏᴏᴜ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ ᴘᴇʀᴍɪssɪᴏɴ\n───────────────`,
+        event.threadID,
+        event.messageID
+      );
     }
 
-    const { messageID, senderID, threadID } = event;
+    const query = args[0];
+    const rawAmount = args[1];
 
+    function parseAmount(str) {
+      if (!str) return NaN;
+      str = str.toLowerCase().trim();
+      if (str.endsWith('b')) return parseFloat(str) * 1_000_000_000;
+      if (str.endsWith('m')) return parseFloat(str) * 1_000_000;
+      if (str.endsWith('k')) return parseFloat(str) * 1_000;
+      return parseFloat(str);
+    }
+
+    const amount = parseAmount(rawAmount);
+
+    if (!query || isNaN(amount)) {
+      return api.sendMessage(
+        `───────────────\n⚠️ ᴜsᴀɢᴇ: sᴇᴛ [ᴍᴏɴᴇʏ|ᴇxᴘ] [ᴀᴍᴏᴜɴᴛ]\n💡 sᴜᴘᴘᴏʀᴛs: 1ᴋ · 1ᴍ · 1ʙ\n───────────────`,
+        event.threadID
+      );
+    }
+
+    const { senderID, threadID } = event;
     if (senderID === api.getCurrentUserID()) return;
 
     let targetUser;
@@ -44,10 +63,20 @@ module.exports = {
 
     const userData = await usersData.get(targetUser);
     if (!userData) {
-      return api.sendMessage("User not found.", threadID);
+      return api.sendMessage(
+        `───────────────\n❌ ᴜsᴇʀ ɴᴏᴛ ꜰᴏᴜɴᴅ\n───────────────`,
+        threadID
+      );
     }
 
     const name = await usersData.getName(targetUser);
+
+    function formatAmount(num) {
+      if (num >= 1_000_000_000) return (num / 1_000_000_000).toFixed(2).replace(/\.00$/, '') + 'ʙ';
+      if (num >= 1_000_000) return (num / 1_000_000).toFixed(2).replace(/\.00$/, '') + 'ᴍ';
+      if (num >= 1_000) return (num / 1_000).toFixed(2).replace(/\.00$/, '') + 'ᴋ';
+      return num.toLocaleString();
+    }
 
     if (query.toLowerCase() === 'exp') {
       await usersData.set(targetUser, {
@@ -56,7 +85,11 @@ module.exports = {
         data: userData.data
       });
 
-      return api.sendMessage(`Set experience points to ${amount} for ${name}.`, threadID);
+      return api.sendMessage(
+        `───────────────\n✨ ᴇxᴘ ᴜᴘᴅᴀᴛᴇᴅ\n───────────────\n➜ ᴜsᴇʀ · ${name}\n➜ ᴇxᴘ  · ${formatAmount(amount)}\n───────────────`,
+        threadID
+      );
+
     } else if (query.toLowerCase() === 'money') {
       await usersData.set(targetUser, {
         money: amount,
@@ -64,9 +97,16 @@ module.exports = {
         data: userData.data
       });
 
-      return api.sendMessage(`Set coins to ${amount} for ${name}.`, threadID);
+      return api.sendMessage(
+        `───────────────\n💸 ᴍᴏɴᴇʏ ᴜᴘᴅᴀᴛᴇᴅ\n───────────────\n➜ ᴜsᴇʀ  · ${name}\n➜ ᴄᴏɪɴs · ${formatAmount(amount)}\n───────────────`,
+        threadID
+      );
+
     } else {
-      return api.sendMessage("Invalid query. Use 'exp' to set experience points or 'money' to set coins.", threadID);
+      return api.sendMessage(
+        `───────────────\n❌ ᴜsᴇ 'ᴇxᴘ' ᴏʀ 'ᴍᴏɴᴇʏ' ᴏɴʟʏ\n───────────────`,
+        threadID
+      );
     }
   }
 };
